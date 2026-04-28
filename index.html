@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Qui fait quoi ? — Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08081a;
+    --card-bg: #111125;
+    --card-bg-open: #0d0d20;
+    --border: #1e1e3a;
+    --text: #f0f0f0;
+    --text-dim: #bbb;
+    --text-muted: #888;
+    --green: #00ff88;
+    --orange: #ff6b35;
+    --yellow: #f1c40f;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Chakra Petch', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,100,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,100,0.025) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scanline */
+  body::after {
+    content: '';
+    position: fixed; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,255,136,0.15), transparent);
+    animation: scanline 4s linear infinite;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.8; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 2;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+  }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 12px; }
+  .badge-top {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #00ff8812; border: 1px solid #00ff8833;
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 11px; font-weight: 600; color: var(--green);
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .badge-top .dot { animation: pulse 2s ease infinite; font-size: 8px; }
+  h1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(30px, 6vw, 50px);
+    letter-spacing: 2px; line-height: 1.1;
+    transition: text-shadow 0.1s;
+  }
+  h1 .accent { color: var(--green); }
+  .subtitle {
+    font-size: 14px; color: #666;
+    margin-top: 6px; letter-spacing: 0.5px;
+  }
+
+  /* Search */
+  .search-wrap {
+    margin: 20px 0 24px; position: relative;
+  }
+  .search-icon {
+    position: absolute; left: 16px; top: 50%;
+    transform: translateY(-50%); font-size: 16px;
+    color: #555; pointer-events: none;
+  }
+  .search-input {
+    width: 100%; padding: 14px 16px 14px 44px;
+    border-radius: 14px; border: 2px solid var(--border);
+    background: #0e0e22; color: #eee;
+    font-size: 14px; font-family: 'Chakra Petch', sans-serif;
+    outline: none; transition: border-color 0.3s;
+  }
+  .search-input:focus { border-color: #00ff8866; }
+
+  /* Stats */
+  .stats { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-box {
+    flex: 1; min-width: 80px;
+    background: #0e0e22; border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px 10px; text-align: center;
+  }
+  .stat-value {
+    font-family: 'Bangers', cursive;
+    font-size: 24px; line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px; color: #555;
+    letter-spacing: 1.5px; margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  /* Cards */
+  .cards { display: flex; flex-direction: column; gap: 10px; }
+
+  .card {
+    animation: cardIn 0.5s ease both;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+  .card.open .card-header {
+    border-radius: 20px 20px 0 0;
+  }
+  .card-accent {
+    height: 4px;
+    border-radius: 20px 20px 0 0;
+  }
+  .card-header-content {
+    padding: 14px 18px 12px;
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  /* Avatar */
+  .avatar-wrap {
+    width: 72px; height: 72px;
+    border-radius: 18px; overflow: hidden;
+    cursor: pointer; flex-shrink: 0;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    flex-direction: column; gap: 2px;
+  }
+  .avatar-wrap:hover {
+    transform: scale(1.06);
+  }
+  .avatar-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover; position: absolute;
+    inset: 0;
+  }
+  .avatar-emoji { font-size: 28px; }
+  .avatar-hint {
+    font-size: 8px; color: #888;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+  .avatar-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+    border-radius: 16px; font-size: 20px;
+  }
+  .avatar-wrap:hover .avatar-overlay { opacity: 1; }
+
+  .card-name {
+    font-family: 'Bangers', cursive;
+    font-size: 20px; letter-spacing: 1px;
+    line-height: 1.2;
+  }
+  .card-role {
+    font-size: 12px; font-weight: 600;
+    margin-top: 3px; text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+  .card-badge {
+    display: inline-block; margin-top: 6px;
+    border-radius: 6px; padding: 2px 8px;
+    font-size: 9px; font-family: 'Bangers', cursive;
+    letter-spacing: 1px;
+  }
+  .chevron {
+    font-size: 18px; color: #555;
+    transition: transform 0.3s; flex-shrink: 0;
+  }
+  .card.open .chevron { transform: rotate(180deg); }
+
+  /* Expanded */
+  .card-body {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .card.open .card-body {
+    max-height: 800px;
+  }
+  .card-body-inner {
+    border: 2px solid;
+    border-top: none;
+    border-radius: 0 0 20px 20px;
+    padding: 0 22px 22px;
+    background: var(--card-bg-open);
+  }
+
+  .big-avatar {
+    display: flex; justify-content: center;
+    padding-top: 18px;
+  }
+  .big-avatar-frame {
+    width: 160px; height: 160px;
+    border-radius: 24px; overflow: hidden;
+  }
+  .big-avatar-frame img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+
+  .section-title {
+    display: flex; align-items: center;
+    gap: 8px; margin-bottom: 10px; margin-top: 18px;
+  }
+  .section-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .section-label {
+    font-family: 'Bangers', cursive;
+    font-size: 15px; letter-spacing: 1px;
+  }
+
+  .mission-item {
+    display: flex; align-items: flex-start;
+    gap: 10px; font-size: 13px;
+    color: var(--text-dim); line-height: 1.55;
+    margin-bottom: 7px;
+  }
+  .mission-dot {
+    width: 6px; height: 6px;
+    border-radius: 2px; margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .separator {
+    height: 1px; margin: 16px 0;
+  }
+
+  .intern-box {
+    background: #f1c40f08;
+    border: 1px solid #f1c40f22;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 13px; color: #ddd;
+    line-height: 1.7;
+  }
+
+  /* Footer */
+  .footer-tip {
+    margin-top: 32px; background: #0e0e22;
+    border-radius: 14px; padding: 16px 20px;
+    border-left: 4px solid var(--yellow);
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .footer-tip .tip-icon { font-size: 24px; flex-shrink: 0; margin-top: 2px; }
+  .footer-tip .tip-title {
+    font-family: 'Bangers', cursive;
+    font-size: 15px; color: var(--yellow);
+    letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .footer-tip .tip-text {
+    font-size: 13px; color: #999; line-height: 1.7;
+  }
+
+  .empty-msg {
+    text-align: center; padding: 40px 20px;
+    color: #555; font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container" id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="badge-top">
+      <span class="dot">●</span>
+      DOSSIER CONFIDENTIEL — ONBOARDING
+    </div>
+    <h1>QUI FAIT QUOI <span class="accent">?</span></h1>
+    <p class="subtitle">Clique sur une fiche pour voir les missions · Clique sur l'avatar pour ajouter une photo</p>
+  </div>
+
+  <!-- Search -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Chercher un nom, un rôle..." id="searchInput" />
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-box">
+      <div class="stat-value" style="color: var(--green)" id="statTotal">8</div>
+      <div class="stat-label">MEMBRES</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" id="statAvatars" style="color: #f39c12">0/8</div>
+      <div class="stat-label">AVATARS</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-value" style="color: #3498db" id="statShown">8</div>
+      <div class="stat-label">AFFICHÉS</div>
+    </div>
+  </div>
+
+  <!-- Cards container -->
+  <div class="cards" id="cardsContainer"></div>
+
+  <!-- Footer -->
+  <div class="footer-tip">
+    <span class="tip-icon">📷</span>
+    <div>
+      <div class="tip-title">COMMENT AJOUTER LES AVATARS</div>
+      <p class="tip-text">Clique directement sur l'icône à gauche de chaque carte pour uploader l'avatar cartoon généré par IA. L'image s'affiche en miniature sur la carte et en grand à l'ouverture.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DONNÉES ÉQUIPE — MODIFIE ICI LES NOMS ET INFOS
+// ============================================================
+const TEAM = [
+  {
+    id: "wilson",
+    name: "Wilson CARTAYE",
+    role: "Gérant",
+    emoji: "🎯",
+    color: "#ff6b35",
+    missions: [
+      "Définir la vision et la stratégie globale de l'entreprise",
+      "Prendre les décisions stratégiques et valider les projets majeurs",
+      "Représenter l'entreprise auprès des partenaires et institutions"
+    ],
+    forInterns: "C'est lui qui valide ton stage et qui peut répondre à tes questions sur la vision de l'entreprise. N'hésite pas à te présenter en début de stage !",
+    badge: "BOSS FINAL"
+  },
+  {
+    id: "julie",
+    name: "Julie CARTAYE",
+    role: "Assistante de direction",
+    emoji: "📋",
+    color: "#e74c3c",
+    missions: [
+      "Coordonner les agendas et organiser les réunions de direction",
+      "Gérer le courrier, les appels et la communication interne",
+      "Assurer le suivi administratif des dossiers et projets"
+    ],
+    forInterns: "Ta personne de référence pour toute question administrative : convention de stage, absences, fournitures, accès aux locaux. C'est par elle que tout passe !",
+    badge: "TOUR DE CONTRÔLE"
+  },
+  {
+    id: "rh",
+    name: "[Nom à compléter]",
+    role: "Responsable RH",
+    emoji: "👥",
+    color: "#9b59b6",
+    missions: [
+      "Recruter et intégrer les nouveaux collaborateurs et stagiaires",
+      "Gérer la paie, les congés et le suivi administratif du personnel",
+      "Accompagner le développement des compétences et la formation"
+    ],
+    forInterns: "C'est ton premier contact avant et pendant le stage. Contrat, planning, évaluations, soucis perso au travail… les RH sont là pour toi.",
+    badge: "GARDIEN DES TALENTS"
+  },
+  {
+    id: "tech",
+    name: "[Nom à compléter]",
+    role: "Responsable Technique",
+    emoji: "🔧",
+    color: "#f39c12",
+    missions: [
+      "Planifier et superviser les interventions techniques sur le terrain",
+      "Assurer la maintenance préventive et curative des équipements",
+      "Garantir le respect des normes de sécurité et de qualité"
+    ],
+    forInterns: "Si tu es en stage technique, c'est ton tuteur terrain. Il t'expliquera les procédures, les outils et les règles de sécurité à respecter.",
+    badge: "MAÎTRE DES MACHINES"
+  },
+  {
+    id: "it",
+    name: "[Nom à compléter]",
+    role: "Responsable IT",
+    emoji: "💻",
+    color: "#00cc88",
+    missions: [
+      "Administrer l'infrastructure réseau et les systèmes informatiques",
+      "Assurer la cybersécurité et la protection des données",
+      "Déployer et maintenir les outils numériques de l'entreprise"
+    ],
+    forInterns: "Ton sauveur du premier jour : il configure ton poste, tes accès mail et tes identifiants. En cas de bug, c'est lui qu'on appelle !",
+    badge: "HÉROS DU RÉSEAU"
+  },
+  {
+    id: "commercial",
+    name: "[Nom à compléter]",
+    role: "Commercial(e)",
+    emoji: "📊",
+    color: "#3498db",
+    missions: [
+      "Prospecter et développer le portefeuille clients",
+      "Négocier les offres commerciales et suivre les contrats",
+      "Analyser le marché et remonter les besoins clients"
+    ],
+    forInterns: "Si tu es en stage commercial, tu l'accompagneras en rendez-vous client. Il t'apprendra les techniques de vente et la relation client.",
+    badge: "CHASSEUR DE DEALS"
+  },
+  {
+    id: "compta",
+    name: "[Nom à compléter]",
+    role: "Comptable",
+    emoji: "💰",
+    color: "#2ecc71",
+    missions: [
+      "Gérer la comptabilité générale et les déclarations fiscales",
+      "Suivre la trésorerie et préparer les bilans financiers",
+      "Traiter les factures fournisseurs et le suivi des paiements"
+    ],
+    forInterns: "Pour tes notes de frais, tes indemnités de stage ou toute question sur la facturation, c'est la bonne personne à contacter.",
+    badge: "GARDIEN DU TRÉSOR"
+  },
+  {
+    id: "comm",
+    name: "[Nom à compléter]",
+    role: "Chargé(e) de Communication",
+    emoji: "📢",
+    color: "#e91e63",
+    missions: [
+      "Animer les réseaux sociaux et gérer l'image de marque",
+      "Concevoir les supports de communication (print et digital)",
+      "Organiser les événements internes et externes"
+    ],
+    forInterns: "Si tu touches au marketing ou à la com', c'est ton binôme créatif. Il peut aussi t'aider à valoriser ton expérience de stage sur LinkedIn !",
+    badge: "VOIX DE L'ENTREPRISE"
+  }
+];
+
+// ============================================================
+//  STATE
+// ============================================================
+let openIndex = null;
+let avatars = {};
+let searchTerm = "";
+
+// Load saved avatars from localStorage
+try {
+  const saved = localStorage.getItem("team-avatars");
+  if (saved) avatars = JSON.parse(saved);
+} catch(e) {}
+
+function saveAvatars() {
+  try { localStorage.setItem("team-avatars", JSON.stringify(avatars)); } catch(e) {}
+}
+
+// ============================================================
+//  RENDER
+// ============================================================
+function render() {
+  const filtered = TEAM.filter(p =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const avatarCount = Object.keys(avatars).length;
+  document.getElementById("statTotal").textContent = TEAM.length;
+  document.getElementById("statAvatars").textContent = `${avatarCount}/${TEAM.length}`;
+  document.getElementById("statAvatars").style.color = avatarCount === TEAM.length ? "#2ecc71" : "#f39c12";
+  document.getElementById("statShown").textContent = filtered.length;
+
+  const container = document.getElementById("cardsContainer");
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty-msg">Aucun résultat pour « ${searchTerm} » 🔍</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map((person, i) => {
+    const isOpen = openIndex === i;
+    const avatar = avatars[person.id];
+    const hex = person.color;
+
+    return `
+      <div class="card ${isOpen ? 'open' : ''}" style="animation-delay: ${i * 0.07}s" data-index="${i}">
+        <div class="card-header" style="border-color: ${isOpen ? hex : 'var(--border)'}">
+          <div class="card-accent" style="background: linear-gradient(90deg, ${hex}, ${hex}44)"></div>
+          <div class="card-header-content">
+            <div class="avatar-wrap" style="border: 2px solid ${hex}55; background: ${avatar ? '#000' : hex + '15'}" data-id="${person.id}">
+              ${avatar
+                ? `<img src="${avatar}" alt="avatar" />`
+                : `<span class="avatar-emoji">${person.emoji}</span><span class="avatar-hint">+ PHOTO</span>`
+              }
+              <div class="avatar-overlay">📷</div>
+              <input type="file" accept="image/*" style="display:none" data-upload="${person.id}" />
+            </div>
+            <div style="flex:1; min-width:0">
+              <div class="card-name">${person.name}</div>
+              <div class="card-role" style="color: ${hex}">${person.role}</div>
+              <div class="card-badge" style="background: ${hex}20; border: 1px solid ${hex}44; color: ${hex}">${person.badge}</div>
+            </div>
+            <div class="chevron">▾</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-body-inner" style="border-color: ${hex}">
+            ${avatar ? `
+              <div class="big-avatar">
+                <div class="big-avatar-frame" style="border: 3px solid ${hex}55; box-shadow: 0 4px 30px ${hex}20">
+                  <img src="${avatar}" alt="${person.name}" />
+                </div>
+              </div>
+            ` : ''}
+            <div class="section-title">
+              <div class="section-icon" style="background: ${hex}22">🎯</div>
+              <span class="section-label" style="color: ${hex}">SES MISSIONS</span>
+            </div>
+            ${person.missions.map(m => `
+              <div class="mission-item">
+                <span class="mission-dot" style="background: ${hex}"></span>
+                ${m}
+              </div>
+            `).join('')}
+            <div class="separator" style="background: linear-gradient(90deg, transparent, ${hex}33, transparent)"></div>
+            <div class="section-title">
+              <div class="section-icon" style="background: #f1c40f22">🎓</div>
+              <span class="section-label" style="color: #f1c40f">POUR TOI, STAGIAIRE</span>
+            </div>
+            <div class="intern-box">${person.forInterns}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Rebind events
+  bindEvents();
+}
+
+function bindEvents() {
+  // Card toggle
+  document.querySelectorAll('.card-header').forEach(header => {
+    header.addEventListener('click', (e) => {
+      if (e.target.closest('.avatar-wrap')) return;
+      const card = header.closest('.card');
+      const idx = parseInt(card.dataset.index);
+      openIndex = openIndex === idx ? null : idx;
+      render();
+    });
+  });
+
+  // Avatar click
+  document.querySelectorAll('.avatar-wrap').forEach(wrap => {
+    wrap.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = wrap.dataset.id;
+      const input = wrap.querySelector('input[type="file"]');
+      input.click();
+    });
+  });
+
+  // File upload
+  document.querySelectorAll('input[data-upload]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const id = input.dataset.upload;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        avatars[id] = ev.target.result;
+        saveAvatars();
+        render();
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+}
+
+// Search
+document.getElementById('searchInput').addEventListener('input', (e) => {
+  searchTerm = e.target.value;
+  openIndex = null;
+  render();
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
